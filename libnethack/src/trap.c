@@ -3188,8 +3188,10 @@ try_disarm(struct trap *ttmp, boolean force_failure, schar dx, schar dy)
                 }
             } else if (under_u) {
                 dotrap(ttmp, 0);
+                pickup(1, flags.interaction_mode);
             } else {
                 move_into_trap(ttmp);
+                pickup(1, flags.interaction_mode);
             }
         } else {
             pline("%s %s is difficult to %s.",
@@ -3252,6 +3254,8 @@ disarm_holdingtrap(struct trap *ttmp, schar dx, schar dy)
         }
     }
     level->locations[u.ux + dx][u.uy + dy].mem_trap = NO_TRAP;
+    if (!dx && !dy) 
+        pickup(1, flags.interaction_mode);
     newsym(u.ux + dx, u.uy + dy);
     return 1;
 }
@@ -3266,6 +3270,8 @@ disarm_landmine(struct trap *ttmp, schar dx, schar dy)
     pline("You disarm %s land mine.", the_your[ttmp->madeby_u]);
     cnv_trap_obj(level, LAND_MINE, 1, ttmp);
     level->locations[u.ux + dx][u.uy + dy].mem_trap = NO_TRAP;
+    if (!dx && !dy)
+        pickup(1, flags.interaction_mode);
     newsym(u.ux + dx, u.uy + dy);
     makeknown(LAND_MINE);
     return 1;
@@ -3304,6 +3310,8 @@ disarm_squeaky_board(struct trap *ttmp, schar dx, schar dy)
     pline("You repair the squeaky board.");     /* no madeby_u */
     level->locations[u.ux + dx][u.uy + dy].mem_trap = NO_TRAP;
     deltrap(level, ttmp);
+    if (!dx && !dy)
+        pickup(1, flags.interaction_mode);
     newsym(u.ux + dx, u.uy + dy);
     more_experienced(1, 5);
     newexplevel();
@@ -3321,6 +3329,8 @@ disarm_shooting_trap(struct trap *ttmp, int otyp, schar dx, schar dy)
     pline("You disarm %s trap.", the_your[ttmp->madeby_u]);
     cnv_trap_obj(level, otyp, 50 - rnl(50), ttmp);
     level->locations[u.ux + dx][u.uy + dy].mem_trap = NO_TRAP;
+    if (!dx && ! dy)
+        pickup(1, flags.interaction_mode);
     newsym(u.ux + dx, u.uy + dy);
     return 1;
 }
