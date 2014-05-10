@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-04-28 */
+/* Last modified by Luke Franceschini, 2014-05-10 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -191,7 +191,7 @@ void
 invault(void)
 {
     struct monst *guard;
-    int trycount, vaultroom = (int)vault_occupied(u.urooms);
+    int trycount, insolence, vaultroom = (int)vault_occupied(u.urooms);
     boolean messages = TRUE;
 
     if (!vaultroom) {
@@ -322,10 +322,31 @@ invault(void)
         action_interrupted();
 
         trycount = 5;
+        insolence = 0; /* increases when remaining silent */
         do {
             buf = getlin("\"Hello stranger, who are you?\" -", FALSE);
             buf = msgmungspaces(buf);
-        } while (!letter(buf[0]) && --trycount > 0);
+            if (!strcmpi(buf, "")) {
+                insolence++;
+                switch (insolence) {
+                    case 1:
+                        verbalize("Well, are you going to say something?");
+                        break;
+                    case 2:
+                        verbalize("Don't play mute with me!");
+                        break;
+                    case 3:
+                        setmangry(guard);
+                        verbalize("I'll cut your tongue out and make you mute!");
+                        /* don't want guard to waste next turn wielding a weapon */
+                        if (!MON_WEP(guard)) {
+                            guard->weapon_check = NEED_HTH_WEAPON;
+                            mon_wield_item(guard);
+                        }
+                        return;
+                }
+            }
+        } while (--trycount > 0);
 
         if (u.ualign.type == A_LAWFUL &&
             /* ignore trailing text, in case player includes character's rank */
